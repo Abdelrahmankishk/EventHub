@@ -16,5 +16,6 @@ namespace EventHub.Models
         [MaxLength(100)]
         public string? CompanyName { get; set; }
         public bool IsVerified { get; set; }
+        public ICollection<Event> Events { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace EventHub.Models
         public int? ParentEventId { get; set; }
         public Event? ParenEvent { get; set; }
         public ICollection<Event> Sessions { get; set; } = new List<Event>();
-        public ICollection<Registration> Registirations { get; set; } 
+        public ICollection<Registration> Registirations { get; set; }
+        public int OrganizerId { get; set; }
+        public Organizer Organizer { get; set; } = default!;
     }
 }

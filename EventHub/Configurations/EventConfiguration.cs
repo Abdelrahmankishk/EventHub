@@ -48,6 +48,13 @@ namespace EventHub.Configurations
                    .HasForeignKey(s => s.ParentEventId)
                    .OnDelete(DeleteBehavior.Restrict);
             #endregion
+
+            #region Event Organizer Relationship
+            builder.HasOne(e=>e.Organizer)
+                   .WithMany(o=>o.Events)
+                   .HasForeignKey(e=>e.OrganizerId)
+                   .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

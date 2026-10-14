@@ -103,6 +103,9 @@ namespace EventHub.Migrations
                     b.Property<DateTime>("ModificationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("OrganizerId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ParentEventId")
                         .HasColumnType("int");
 
@@ -115,6 +118,8 @@ namespace EventHub.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.HasKey("EventId");
+
+                    b.HasIndex("OrganizerId");
 
                     b.HasIndex("ParentEventId");
 
@@ -248,10 +253,18 @@ namespace EventHub.Migrations
 
             modelBuilder.Entity("EventHub.Models.Event", b =>
                 {
+                    b.HasOne("EventHub.Models.Organizer", "Organizer")
+                        .WithMany("Events")
+                        .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EventHub.Models.Event", "ParenEvent")
                         .WithMany("Sessions")
                         .HasForeignKey("ParentEventId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Organizer");
 
                     b.Navigation("ParenEvent");
                 });
@@ -287,6 +300,11 @@ namespace EventHub.Migrations
                     b.Navigation("Registirations");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("EventHub.Models.Organizer", b =>
+                {
+                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }
