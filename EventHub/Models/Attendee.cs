@@ -13,5 +13,6 @@ namespace EventHub.Models
         public string EmailAddress { get; set; } = default!;
         public Address HomeAddress { get; set; } = new();
         public ICollection<Registration> Registirations { get; set; }
+        public Badge? EarnedBadge { get; set; }
     }
 }

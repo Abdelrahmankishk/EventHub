@@ -56,6 +56,9 @@ namespace EventHub.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BadgeId"));
 
+                    b.Property<int>("AttendeeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("BadgeNum")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -68,6 +71,9 @@ namespace EventHub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("BadgeId");
+
+                    b.HasIndex("AttendeeId")
+                        .IsUnique();
 
                     b.ToTable("Badges");
                 });
@@ -229,6 +235,17 @@ namespace EventHub.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EventHub.Models.Badge", b =>
+                {
+                    b.HasOne("EventHub.Models.Attendee", "BadgeOwner")
+                        .WithOne("EarnedBadge")
+                        .HasForeignKey("EventHub.Models.Badge", "AttendeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BadgeOwner");
+                });
+
             modelBuilder.Entity("EventHub.Models.Event", b =>
                 {
                     b.HasOne("EventHub.Models.Event", "ParenEvent")
@@ -260,6 +277,8 @@ namespace EventHub.Migrations
 
             modelBuilder.Entity("EventHub.Models.Attendee", b =>
                 {
+                    b.Navigation("EarnedBadge");
+
                     b.Navigation("Registirations");
                 });
 

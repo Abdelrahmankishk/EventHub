@@ -18,6 +18,8 @@ namespace EventHub.Models
         public string BadgeNum { get; set; } = default!;
         public DateTime IssueDate { get; set; }
         public BadgeTier Tier { get; set; }
-
+        [ForeignKey(nameof(BadgeOwner))]
+        public int AttendeeId { get; set; }
+        public Attendee BadgeOwner { get; set; } = default!;
     }
 }
