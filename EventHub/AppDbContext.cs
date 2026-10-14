@@ -17,7 +17,7 @@ namespace EventHub
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            #region OrganizerProfile Configration
+            #region OrganizerProfile Configuration
             modelBuilder.Entity<OrganizerProfile>(entity=>
             {
                 entity.ToTable("OrganizerProfiles");
@@ -33,6 +33,18 @@ namespace EventHub
             modelBuilder.ApplyConfiguration(new AttendeeConfiguration());
 
             modelBuilder.ApplyConfiguration(new EventConfiguration());
+
+            #region Registration Configuration
+            modelBuilder.Entity<Registration>(entity =>
+            {
+                entity.ToTable("Registrations");
+                entity.HasKey(r => new { r.EventId, r.AttendeeId });
+
+                entity.Property(r=>r.Note).HasMaxLength(300);
+                entity.Property(r => r.RegistirationTime).HasDefaultValueSql("GETDATE()");
+            });
+                        
+            #endregion
         }
         DbSet<Organizer> Organizers { get; set; }
         DbSet<Badge> Badges { get; set; }

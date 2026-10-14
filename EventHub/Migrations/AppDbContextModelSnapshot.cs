@@ -166,6 +166,30 @@ namespace EventHub.Migrations
                     b.ToTable("OrganizerProfiles", (string)null);
                 });
 
+            modelBuilder.Entity("EventHub.Models.Registration", b =>
+                {
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AttendeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("RegistirationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("EventId", "AttendeeId");
+
+                    b.HasIndex("AttendeeId");
+
+                    b.ToTable("Registrations", (string)null);
+                });
+
             modelBuilder.Entity("EventHub.Models.Attendee", b =>
                 {
                     b.OwnsOne("EventHub.Models.Address", "HomeAddress", b1 =>
@@ -215,8 +239,34 @@ namespace EventHub.Migrations
                     b.Navigation("ParenEvent");
                 });
 
+            modelBuilder.Entity("EventHub.Models.Registration", b =>
+                {
+                    b.HasOne("EventHub.Models.Attendee", "Attendee")
+                        .WithMany("Registirations")
+                        .HasForeignKey("AttendeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventHub.Models.Event", "Event")
+                        .WithMany("Registirations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attendee");
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("EventHub.Models.Attendee", b =>
+                {
+                    b.Navigation("Registirations");
+                });
+
             modelBuilder.Entity("EventHub.Models.Event", b =>
                 {
+                    b.Navigation("Registirations");
+
                     b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
