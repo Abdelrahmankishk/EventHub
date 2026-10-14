@@ -42,7 +42,12 @@ namespace EventHub.Configurations
                 .IsRequired();
             #endregion
 
-
+            #region Sessions Self-Referencing Relationships
+            builder.HasOne(e=>e.ParenEvent)
+                   .WithMany(s=>s.Sessions)
+                   .HasForeignKey(s => s.ParentEventId)
+                   .OnDelete(DeleteBehavior.Restrict);
+            #endregion
         }
     }
 }

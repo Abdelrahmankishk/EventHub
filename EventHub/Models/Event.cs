@@ -14,5 +14,9 @@ namespace EventHub.Models
         public int MaxAttendees { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+
+        public int? ParentEventId { get; set; }
+        public Event? ParenEvent { get; set; }
+        public ICollection<Event> Sessions { get; set; } = new List<Event>();
     }
 }
