@@ -27,8 +27,16 @@ namespace EventHub
                                 .HasMaxLength(500);
                 entity.Property(p => p.WebsiteLink).HasMaxLength(250);
                 entity.Property(p => p.LogoLink).HasMaxLength(250);
+
+                #region Organizer OrgnizerProfile Relationship
+                entity.HasOne(p => p.ProfileOwner)
+                      .WithOne(o => o.Profile)
+                      .HasForeignKey<OrganizerProfile>(p => p.OrganizerId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+                #endregion
             });
-            #endregion 
+            #endregion
 
             modelBuilder.ApplyConfiguration(new AttendeeConfiguration());
 

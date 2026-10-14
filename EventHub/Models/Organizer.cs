@@ -17,5 +17,6 @@ namespace EventHub.Models
         public string? CompanyName { get; set; }
         public bool IsVerified { get; set; }
         public ICollection<Event> Events { get; set; }
+        public OrganizerProfile? Profile { get; set; }
     }
 }

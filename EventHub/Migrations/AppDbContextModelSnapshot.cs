@@ -168,11 +168,17 @@ namespace EventHub.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<int>("OrganizerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("WebsiteLink")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.HasKey("ProfileId");
+
+                    b.HasIndex("OrganizerId")
+                        .IsUnique();
 
                     b.ToTable("OrganizerProfiles", (string)null);
                 });
@@ -269,6 +275,17 @@ namespace EventHub.Migrations
                     b.Navigation("ParenEvent");
                 });
 
+            modelBuilder.Entity("EventHub.Models.OrganizerProfile", b =>
+                {
+                    b.HasOne("EventHub.Models.Organizer", "ProfileOwner")
+                        .WithOne("Profile")
+                        .HasForeignKey("EventHub.Models.OrganizerProfile", "OrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProfileOwner");
+                });
+
             modelBuilder.Entity("EventHub.Models.Registration", b =>
                 {
                     b.HasOne("EventHub.Models.Attendee", "Attendee")
@@ -305,6 +322,8 @@ namespace EventHub.Migrations
             modelBuilder.Entity("EventHub.Models.Organizer", b =>
                 {
                     b.Navigation("Events");
+
+                    b.Navigation("Profile");
                 });
 #pragma warning restore 612, 618
         }
