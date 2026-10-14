@@ -30,5 +30,6 @@ namespace EventHub
             #endregion 
         }
         DbSet<Organizer> Organizers { get; set; }
+        DbSet<Badge> Badges { get; set; }
     }
 }
