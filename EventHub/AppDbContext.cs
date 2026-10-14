@@ -31,6 +31,8 @@ namespace EventHub
             #endregion 
 
             modelBuilder.ApplyConfiguration(new AttendeeConfiguration());
+
+            modelBuilder.ApplyConfiguration(new EventConfiguration());
         }
         DbSet<Organizer> Organizers { get; set; }
         DbSet<Badge> Badges { get; set; }
