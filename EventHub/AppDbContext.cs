@@ -1,4 +1,5 @@
-﻿using EventHub.Models;
+﻿using EventHub.Configurations;
+using EventHub.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace EventHub
                 entity.Property(p => p.LogoLink).HasMaxLength(250);
             });
             #endregion 
+
+            modelBuilder.ApplyConfiguration(new AttendeeConfiguration());
         }
         DbSet<Organizer> Organizers { get; set; }
         DbSet<Badge> Badges { get; set; }

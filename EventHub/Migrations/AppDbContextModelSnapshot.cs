@@ -22,6 +22,32 @@ namespace EventHub.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EventHub.Models.Attendee", b =>
+                {
+                    b.Property<int>("AttendeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttendeeId"));
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("AttendeeId");
+
+                    b.HasIndex("EmailAddress")
+                        .IsUnique();
+
+                    b.ToTable("Attendees", (string)null);
+                });
+
             modelBuilder.Entity("EventHub.Models.Badge", b =>
                 {
                     b.Property<int>("BadgeId")
@@ -95,6 +121,45 @@ namespace EventHub.Migrations
                     b.HasKey("ProfileId");
 
                     b.ToTable("OrganizerProfiles", (string)null);
+                });
+
+            modelBuilder.Entity("EventHub.Models.Attendee", b =>
+                {
+                    b.OwnsOne("EventHub.Models.Address", "HomeAddress", b1 =>
+                        {
+                            b1.Property<int>("AttendeeId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.Property<string>("PostalCode")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)");
+
+                            b1.Property<string>("Streat")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.HasKey("AttendeeId");
+
+                            b1.ToTable("Attendees");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AttendeeId");
+                        });
+
+                    b.Navigation("HomeAddress")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
