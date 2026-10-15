@@ -1,80 +1,93 @@
 # EventHub
 
-**EventHub** is a learning-focused C# console project that models an event-management platform where individuals and companies can organize events, attendees can register, and registrations can be used to issue attendee badges.
+**EventHub** is a C#/.NET console application that models the data layer of an event-management platform. It represents organizers and their profiles, events and nested sessions, attendees, event registrations, and attendee badges.
 
-> **Learning objective:** This is my **first Entity Framework Core (EF Core) project**. I built it to practice EF Core’s core features and understand how C# entities are translated into a relational SQL Server database—not just to build an event-management application.
+The project uses **Entity Framework Core (EF Core) with SQL Server** to define the relational model, configure entity mappings, and manage database schema changes through code-first migrations.
 
-## What I Practiced with EF Core
+## Overview
 
-- **Code-first database development** and schema evolution through EF Core migrations.
-- **Fluent API** configuration in `OnModelCreating` and dedicated entity configuration classes.
-- **Data Annotations** for validation and relationship metadata.
-- **Owned types** to map an attendee’s address into columns in the `Attendees` table.
-- **Shadow properties** for event timestamps that are stored in the EF model/database but are not CLR properties on `Event`.
-- **Relationship mapping**: one-to-one, one-to-many, self-referencing relationships, and many-to-many relationships through a join entity.
-- **Composite primary keys**, unique indexes, required/optional properties, maximum lengths, SQL default values, and delete behaviors.
-- Reading the generated **SQL Server schema** and comparing it with the ERD and EF Core mapping design.
+EventHub includes the following domain capabilities:
+
+- Organizers with verification status and a one-to-one public profile.
+- Events published by organizers, including optional end dates and nested sessions.
+- Attendees with contact information and an owned home address.
+- Event registrations with an optional note and registration timestamp.
+- Optional attendee badges with an issue date, badge number, and `Standard` or `VIP` tier.
 
 ## Technology Stack
 
-- **C# / .NET 8**
-- **Entity Framework Core 8** (`Microsoft.EntityFrameworkCore.SqlServer` and `Microsoft.EntityFrameworkCore.Tools`)
+- **C#**
+- **.NET 8**
+- **Entity Framework Core 8**
 - **Microsoft SQL Server**
 
-## Domain Model
+## EF Core Implementation
 
-| Entity | Purpose |
+The project demonstrates multiple EF Core configuration techniques and relational mapping features.
+
+| Feature | Implementation |
 | --- | --- |
-| `Organizer` | Represents a person or company organizing events, including its name, optional company name, and verification status. |
-| `OrganizerProfile` | Stores public profile information such as biography, website link, and logo link. |
-| `Event` | Stores event details, attendee capacity, dates, organizer, and optional parent event. An event can also contain sessions represented by child `Event` records. |
-| `Attendee` | Stores attendee details, email address, home address, registrations, and optional badge. |
-| `Address` | An owned type containing the attendee’s street, city, country, and postal code. |
-| `Registration` | Join entity between `Attendee` and `Event`, with an optional note and registration timestamp. |
-| `Badge` | Represents an attendee’s badge, including badge number, issue date, and tier. |
-| `BadgeTier` | Enum containing `Standard` and `VIP`. |
+| Code-first workflow | Entity classes and model configuration define the schema, with migrations tracking schema changes. |
+| Data Annotations | Used in `Organizer` and `Badge` for property constraints and foreign-key metadata. |
+| Fluent API | Used in `AppDbContext.OnModelCreating` for `OrganizerProfile` and `Registration`. |
+| Entity configuration classes | `AttendeeConfiguration` and `EventConfiguration` implement `IEntityTypeConfiguration<T>`. |
+| Owned type | `Address` is configured with `OwnsOne` and mapped into the `Attendees` table. |
+| Shadow properties | `CreationDate` and `ModificationDate` are defined for `Event` without being CLR properties on the entity class. |
+| Composite primary key | `Registration` uses `EventId` and `AttendeeId` as its key. |
+| Indexes and constraints | Required fields, maximum lengths, a unique index on attendee email, and optional properties are configured. |
+| Database defaults | The registration timestamp is configured with the SQL default `GETDATE()`. |
+| Relationship behaviors | One-to-one, one-to-many, self-referencing, and join-entity relationships are configured with explicit delete behaviors where needed. |
 
-## EF Core Configuration Approaches
+### Entity Configuration Details
 
-One of the project’s main goals is to practice different ways of configuring the EF Core model and to understand where each approach is useful.
-
-| Entity / Feature | Configuration approach | What it demonstrates |
+| Entity / Feature | Configuration | Key mappings |
 | --- | --- | --- |
-| `Organizer` | **Data Annotations** on the entity | Required name, maximum string lengths, and an optional company name. |
-| `Badge` | **Data Annotations** on the entity | Required badge number, maximum length, and foreign-key metadata. `Tier` uses the `BadgeTier` enum (`Standard`, `VIP`). |
-| `Attendee` | `AttendeeConfiguration : IEntityTypeConfiguration<Attendee>` | Table and primary-key mapping, required fields, maximum lengths, and a unique index on `EmailAddress`. |
-| `Address` | **Owned type**, configured inside `AttendeeConfiguration` with `OwnsOne` | Address fields are stored as columns in the `Attendees` table rather than in a separate `Addresses` table. The address fields are required and have explicit maximum lengths. |
-| `Event` | `EventConfiguration : IEntityTypeConfiguration<Event>` | Event property constraints, optional `EndDate`, organizer relationship, self-referencing event/session relationship, and required shadow properties. |
-| `OrganizerProfile` | **Fluent API** in `AppDbContext.OnModelCreating` | Table name, key, property constraints, and the one-to-one relationship with `Organizer`. |
-| `Registration` | **Fluent API** in `AppDbContext.OnModelCreating` | Join table, composite primary key (`EventId`, `AttendeeId`), optional note, and a SQL default for the registration timestamp. |
+| `Organizer` | Data Annotations | Required `Name`, maximum lengths, optional `CompanyName`, and verification status. |
+| `Badge` | Data Annotations | Required `BadgeNum`, maximum length, and foreign-key metadata for the badge owner. |
+| `Attendee` | `AttendeeConfiguration` | Table and primary key, required name and email, maximum lengths, and a unique index on `EmailAddress`. |
+| `Address` | Owned type in `AttendeeConfiguration` | Street, city, country, and postal code are required and assigned maximum lengths. No separate address table is needed. |
+| `Event` | `EventConfiguration` | Title and description constraints, required start date and capacity, optional end date, shadow properties, organizer relationship, and self-referencing session relationship. |
+| `OrganizerProfile` | Fluent API in `OnModelCreating` | Table name, primary key, biography and link constraints, and required one-to-one relationship with `Organizer`. |
+| `Registration` | Fluent API in `OnModelCreating` | Table name, composite primary key, optional note, and SQL default for the registration timestamp. |
 
-### Shadow Properties for Event Timestamps
+### Event Timestamp Shadow Properties
 
-`EventConfiguration` defines `CreationDate` and `ModificationDate` as required EF Core **shadow properties**:
+The event configuration defines two required shadow properties:
 
 ```csharp
 builder.Property<DateTime>("CreationDate").IsRequired();
 builder.Property<DateTime>("ModificationDate").IsRequired();
 ```
 
-These properties belong to the EF Core model but are not declared on the `Event` C# class. This is useful for data that the persistence layer manages without exposing it as a regular entity property.
+These properties are part of the EF Core model and database schema, but they are not declared as regular properties on the `Event` class. Their values must be set and maintained by the persistence logic or another database mechanism.
 
-**Implementation note:** the configuration above defines the required shadow properties; automatically setting the creation timestamp and updating the modification timestamp requires additional logic, such as a `SaveChanges` override or a save-changes interceptor, unless it is handled elsewhere.
+## Domain Model
 
-## Relationships
+| Entity | Responsibility |
+| --- | --- |
+| `Organizer` | Organizer identity, company name, verification status, events, and profile. |
+| `OrganizerProfile` | Biography, website link, and logo link for an organizer. |
+| `Event` | Event details, dates, maximum attendees, organizer, parent event, and child sessions. |
+| `Attendee` | Attendee identity and contact details, owned address, registrations, and optional badge. |
+| `Address` | Value data for an attendee's home address. |
+| `Registration` | Associative entity linking an attendee to an event, including registration-specific fields. |
+| `Badge` | Badge number, issue date, tier, and owning attendee. |
+| `BadgeTier` | Enum defining `Standard` and `VIP` tiers. |
 
-| Relationship | Mapping | Notes |
+## Database Relationships
+
+| Relationship | Type | Mapping details |
 | --- | --- | --- |
-| `Organizer` → `OrganizerProfile` | One-to-one | A profile is dependent on an organizer and has a required `OrganizerId` foreign key. |
-| `Organizer` → `Event` | One-to-many | An organizer can publish multiple events; each event references one organizer. |
-| `Event` → `Event` (sessions) | Self-referencing one-to-many | A parent event can contain multiple sessions. Each session can reference at most one parent event. |
-| `Attendee` → `Badge` | One-to-one, optional for attendee | An attendee can have at most one badge; a badge belongs to one attendee. |
-| `Attendee` ↔ `Event` | Many-to-many through `Registration` | `Registration` stores the composite key plus registration-specific data. |
-| `Attendee` → `Address` | Owned type | The address is owned by the attendee and mapped into the `Attendees` table. |
+| `Organizer` → `OrganizerProfile` | One-to-one | `OrganizerProfile` has a required `OrganizerId` foreign key. |
+| `Organizer` → `Event` | One-to-many | An organizer can publish multiple events; each event references an organizer. |
+| `Event` → `Event` | Self-referencing one-to-many | A parent event can contain multiple sessions; each session can reference one parent event. |
+| `Attendee` → `Badge` | Optional one-to-one from attendee | An attendee can have at most one badge; each badge references one attendee. |
+| `Attendee` ↔ `Event` | Many-to-many through `Registration` | `Registration` uses the composite key `(EventId, AttendeeId)` and stores the note and registration timestamp. |
+| `Attendee` → `Address` | Owned type | The address is owned by the attendee and stored as columns in the `Attendees` table. |
 
-The mapping also specifies relationship delete behaviors, including `Restrict` for the organizer profile and the self-referencing event relationship, and `Cascade` for the event-to-organizer relationship.
+Delete behavior is configured for selected relationships: the organizer-profile and parent-event relationships use `Restrict`, while the event-to-organizer relationship uses `Cascade`.
 
-## ERD and Mapping Diagrams
+## ERD and Database Diagrams
 
 ### Entity Relationship Diagram
 
@@ -82,28 +95,28 @@ The mapping also specifies relationship delete behaviors, including `Restrict` f
 
 ### EF Core Mapping Diagram
 
-![EventHub Mapping Diagram](EventHub/files/EventHub-Mapping.png)
+![EventHub mapping diagram](EventHub/files/EventHub-Mapping.png)
 
 ### SQL Server Schema
 
 ![EventHub SQL Server schema](EventHub/files/EventHub-SQLServerSchema.png)
 
-The database schema shows how the model maps to relational tables. The owned address is flattened into columns in `Attendees`, while the event timestamps are represented as shadow-property columns in `Events`.
+The SQL Server schema illustrates how the entities and relationships are represented as tables, keys, and foreign keys. The attendee's owned address is mapped to columns in `Attendees`, and the event shadow properties are represented in the `Events` table.
 
 ## Migrations
 
-EF Core migrations are included in `EventHub/Migrations`. They record the schema changes as the model evolves—for example, creating tables and adding the organizer/profile, event/session, registration, and attendee/badge relationships.
+Database migrations are stored in `EventHub/Migrations`. They capture schema changes as the EF Core model evolves, including table creation and relationship configuration.
 
-Using the **Package Manager Console** in Visual Studio, select the `EventHub` project as the target project and run:
+In Visual Studio's **Package Manager Console**, select `EventHub` as the target project.
 
 ```powershell
-# Apply the existing migrations to the configured SQL Server database
+# Apply existing migrations to the configured database
 Update-Database
 
-# Create a migration after changing the model
+# Generate a migration after changing the model
 Add-Migration <MigrationName>
 
-# Apply the newly created migration
+# Apply the new migration
 Update-Database
 ```
 
@@ -140,8 +153,8 @@ EventHub/
 ### Prerequisites
 
 - .NET 8 SDK
-- SQL Server (or a compatible local SQL Server instance)
-- Visual Studio with EF Core tools, or the equivalent EF Core command-line tooling
+- Microsoft SQL Server or a compatible local SQL Server instance
+- Visual Studio with EF Core tools, or equivalent EF Core command-line tooling
 
 ### Setup
 
@@ -154,9 +167,9 @@ EventHub/
 
 2. Open `EventHub.sln` in Visual Studio.
 
-3. Check the SQL Server connection string configured in `EventHub/AppDbContext.cs` (`OnConfiguring`) and change it to match your local SQL Server instance.
+3. Update the SQL Server connection string in `EventHub/AppDbContext.cs`, inside `OnConfiguring`, to match your local database instance.
 
-4. In Visual Studio’s Package Manager Console, select `EventHub` as the target project and apply the migrations:
+4. In Visual Studio's Package Manager Console, select `EventHub` as the target project and apply the migrations:
 
    ```powershell
    Update-Database
@@ -164,8 +177,8 @@ EventHub/
 
 5. Build and run the console project.
 
-> **Connection-string note:** the current project configures the connection string directly in `AppDbContext.OnConfiguring` for local development. For a deployed or shared environment, move it to configuration or a secret store rather than committing environment-specific connection details.
+> **Configuration note:** The current connection string is defined in `AppDbContext.OnConfiguring` for local development. For shared or deployed environments, use application configuration or a secret store instead of committing environment-specific connection details.
 
-## Project Scope
+## Repository Assets
 
-EventHub is primarily an **EF Core learning project**. Its focus is entity modeling, mapping configuration, migrations, and understanding how relationships and CLR objects are represented in SQL Server. It is not intended to present a finished production event-management UI.
+The `EventHub/files` directory contains the business rules document, ERD, mapping diagram, and SQL Server schema image used to describe the database design.
