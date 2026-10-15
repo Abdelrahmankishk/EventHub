@@ -14,13 +14,6 @@ EventHub includes the following domain capabilities:
 - Event registrations with an optional note and registration timestamp.
 - Optional attendee badges with an issue date, badge number, and `Standard` or `VIP` tier.
 
-## Technology Stack
-
-- **C#**
-- **.NET 8**
-- **Entity Framework Core 8**
-- **Microsoft SQL Server**
-
 ## EF Core Implementation
 
 The project demonstrates multiple EF Core configuration techniques and relational mapping features.
@@ -103,23 +96,6 @@ Delete behavior is configured for selected relationships: the organizer-profile 
 
 The SQL Server schema illustrates how the entities and relationships are represented as tables, keys, and foreign keys. The attendee's owned address is mapped to columns in `Attendees`, and the event shadow properties are represented in the `Events` table.
 
-## Migrations
-
-Database migrations are stored in `EventHub/Migrations`. They capture schema changes as the EF Core model evolves, including table creation and relationship configuration.
-
-In Visual Studio's **Package Manager Console**, select `EventHub` as the target project.
-
-```powershell
-# Apply existing migrations to the configured database
-Update-Database
-
-# Generate a migration after changing the model
-Add-Migration <MigrationName>
-
-# Apply the new migration
-Update-Database
-```
-
 ## Project Structure
 
 ```text
@@ -147,37 +123,6 @@ EventHub/
 ├── EventHub.csproj
 └── Program.cs
 ```
-
-## Getting Started
-
-### Prerequisites
-
-- .NET 8 SDK
-- Microsoft SQL Server or a compatible local SQL Server instance
-- Visual Studio with EF Core tools, or equivalent EF Core command-line tooling
-
-### Setup
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Abdelrahmankishk/EventHub.git
-   cd EventHub
-   ```
-
-2. Open `EventHub.sln` in Visual Studio.
-
-3. Update the SQL Server connection string in `EventHub/AppDbContext.cs`, inside `OnConfiguring`, to match your local database instance.
-
-4. In Visual Studio's Package Manager Console, select `EventHub` as the target project and apply the migrations:
-
-   ```powershell
-   Update-Database
-   ```
-
-5. Build and run the console project.
-
-> **Configuration note:** The current connection string is defined in `AppDbContext.OnConfiguring` for local development. For shared or deployed environments, use application configuration or a secret store instead of committing environment-specific connection details.
 
 ## Repository Assets
 
